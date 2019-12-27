@@ -50,18 +50,7 @@ namespace VirtoCommerce.Platform.Data.Azure
             try
             {
                 var cloudBlob = _cloudBlobClient.GetBlobReferenceFromServer(uri);
-                var fileName = Path.GetFileName(Uri.UnescapeDataString(cloudBlob.Uri.ToString()));
-                var contentType = MimeTypeResolver.ResolveContentType(fileName);
-
-                retVal = new BlobInfo
-                {
-                    Url = GetAbsoluteUrl(cloudBlob.Uri.PathAndQuery),
-                    FileName = fileName,
-                    ContentType = contentType,
-                    Size = cloudBlob.Properties.Length,
-                    ModifiedDate = cloudBlob.Properties.LastModified?.DateTime,
-                    RelativeUrl = cloudBlob.Uri.LocalPath
-                };
+                retVal = ConvertCloudBlobToBlobInfo(cloudBlob);
             }
             catch (Exception)
             {
@@ -175,15 +164,7 @@ namespace VirtoCommerce.Platform.Data.Azure
                         var directory = item as CloudBlobDirectory;
                         if (block != null)
                         {
-                            var blobInfo = new BlobInfo
-                            {
-                                Url = GetAbsoluteUrl(block.Uri.PathAndQuery),
-                                FileName = Path.GetFileName(Uri.UnescapeDataString(block.Uri.ToString())),
-                                ContentType = block.Properties.ContentType,
-                                Size = block.Properties.Length,
-                                ModifiedDate = block.Properties.LastModified?.DateTime
-                            };
-                            blobInfo.RelativeUrl = blobInfo.Url.Replace(_cloudBlobClient.BaseUri.ToString(), string.Empty);
+                            var blobInfo = ConvertCloudBlobToBlobInfo(block);                            
                             //Do not return empty blob (created with directory because azure blob not support direct directory creation)
                             if (!string.IsNullOrEmpty(blobInfo.FileName))
                             {
@@ -373,6 +354,24 @@ namespace VirtoCommerce.Platform.Data.Azure
                 retVal = container;
             }
             return retVal;
+        }
+
+        private BlobInfo ConvertCloudBlobToBlobInfo(ICloudBlob cloudBlob)
+        {
+            var relativeUrl = cloudBlob.Uri.LocalPath; // blobInfo.RelativeUrl = blobInfo.Url.Replace(_cloudBlobClient.BaseUri.ToString(), string.Empty);
+            var absoluteUrl = GetAbsoluteUrl(cloudBlob.Uri.PathAndQuery);
+            var fileName = Path.GetFileName(Uri.UnescapeDataString(cloudBlob.Uri.ToString()));
+            var contentType = MimeTypeResolver.ResolveContentType(fileName);
+
+            return new BlobInfo
+            {
+                Url = absoluteUrl,
+                FileName = fileName,
+                ContentType = contentType,
+                Size = cloudBlob.Properties.Length,
+                ModifiedDate = cloudBlob.Properties.LastModified?.DateTime,
+                RelativeUrl = relativeUrl
+            };           
         }
 
         private static CloudStorageAccount ParseConnectionString(string connectionString)
