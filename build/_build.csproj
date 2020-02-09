@@ -23,8 +23,8 @@
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>      
-        <PackageReference Include="Nuke.Common" Version="0.23.6" />
-        <PackageReference Include="VirtoCommerce.Platform.Core" Version="3.0.0-beta0004" />
+        <PackageReference Include="Nuke.Common" Version="0.24.1" />
+        <PackageReference Include="VirtoCommerce.Platform.Core" Version="3.0.0-rc3-0147" />
     </ItemGroup>
 
     <ItemGroup>
